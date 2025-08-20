@@ -1,0 +1,21 @@
+# Локальная конфигурация с секретами (токены Telegram/MAX)
+ini.toml
+
+# Артефакты сборки PyInstaller
+build/
+dist/
+*.spec
+
+# Кэш и байт-код Python
+__pycache__/
+*.py[cod]
+*.egg-info/
+.eggs/
+
+# Виртуальные окружения
+.venv/
+venv/
+env/
+
+# Служебное
+.pytest_cache/
