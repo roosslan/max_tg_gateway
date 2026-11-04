@@ -1,7 +1,10 @@
 # Локальная конфигурация с секретами (токены Telegram/MAX)
 ini.toml
 
-# Артефакты сборки PyInstaller
+# Рабочее состояние (соответствия mid MAX -> сообщения Telegram)
+state.json
+
+# Артефакты сборки
 build/
 dist/
 *.spec
