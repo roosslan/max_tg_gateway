@@ -160,6 +160,8 @@ def _handle_message(message: dict, mapping: dict, tg_token: str, max_token: str,
         file_id = photos[-1].get("file_id")
         if file_id:
             png_bytes = _download_photo(tg_token, file_id)
+            if png_bytes is None:
+                raise RuntimeError("Не удалось скачать фотографию Telegram")
             filename = f"{file_id}.jpg"
 
     if not text and not png_bytes:
@@ -171,6 +173,9 @@ def _handle_message(message: dict, mapping: dict, tg_token: str, max_token: str,
     forward_text = f"{label}:\n{text}" if text else label
 
     mid = forward_to_max_chat(max_token, chat_id, text=forward_text, png_bytes=png_bytes, filename=filename)
+
+    if not mid:
+        raise RuntimeError("Не удалось доставить сообщение в MAX")
 
     # Запоминаем соответствие для обратной маршрутизации ответа из MAX.
     if mid:
@@ -223,10 +228,10 @@ def run_bridge(config, store) -> None:
             data = _tg_get(token=tg_token, method="getUpdates", params=params)
 
             for update in data.get("result", []):
-                offset = update["update_id"] + 1
                 message = update.get("message") or update.get("channel_post")
                 if isinstance(message, dict):
                     _handle_message(message, mapping, tg_token, max_token, store)
+                offset = update["update_id"] + 1
         except Exception as exc:
             print(f"[ERROR] Ошибка опроса TG: {exc}", file=sys.stderr)
             time.sleep(5)

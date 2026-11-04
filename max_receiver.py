@@ -166,12 +166,13 @@ def _handle_reply_to_telegram(tg_token: str, entry: dict, text: str) -> None:
     """
     if not text:
         return
-    send_tg_message(
+    if not send_tg_message(
         tg_token,
         entry.get("tg_chat_id"),
         text,
         reply_to_message_id=entry.get("tg_message_id"),
-    )
+    ):
+        raise RuntimeError("Не удалось доставить ответ в Telegram")
 
 
 def _handle_message(message: dict, config, store) -> None:
@@ -188,6 +189,9 @@ def _handle_message(message: dict, config, store) -> None:
     """
     text = _extract_text(message)
     sender_id = _extract_sender_id(message)
+
+    if not config.max_owner_id or sender_id != str(config.max_owner_id):
+        return
 
     # Сценарий 1: ответ (reply) на пересланное сообщение → в Telegram.
     reply_mid = _extract_reply_mid(message)
@@ -236,14 +240,13 @@ def run_receiver(config, store) -> None:
                 params=params,
                 headers=headers,
                 timeout=POLL_TIMEOUT + 15,
-                verify=False,
+                verify=True,
             )
             resp.raise_for_status()
             data = resp.json()
 
             for update in data.get("updates", []):
                 # Сырой апдейт в stderr — помогает зафиксировать формат полей MAX.
-                print(f"[DEBUG] MAX update: {update}", file=sys.stderr)
                 update_type = str(update.get("update_type") or "")
                 if update_type and update_type != "message_created":
                     continue

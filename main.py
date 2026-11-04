@@ -27,7 +27,8 @@ def main() -> None:
     """
     try:
         config = load_config()
-    except RuntimeError:
+    except RuntimeError as exc:
+        print(str(exc), file=sys.stderr)
         sys.exit(1)
 
     store = MappingStore(config.state_file)
@@ -52,9 +53,9 @@ def main() -> None:
 
     # Держим процесс живым, пока живы фоновые циклы (до Ctrl+C).
     try:
-        for thread in threads:
-            while thread.is_alive():
-                thread.join(timeout=1)
+        while all(thread.is_alive() for thread in threads):
+            threads[0].join(timeout=1)
+        raise SystemExit(1)
     except KeyboardInterrupt:
         pass
 

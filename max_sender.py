@@ -7,13 +7,9 @@ mid), отправка текста и отправка файла (с подд�
 import io
 import sys
 import threading
-import urllib3
 
 import requests
 
-
-# Отключаем предупреждения о проверке SSL (MAX требует доверенный серт Минцифры).
-urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 MAX_API = "https://platform-api2.max.ru"
 
@@ -51,7 +47,7 @@ def _upload_to_max(token: str, data: bytes, filename: str, upload_type: str, con
         params={"type": upload_type},
         headers=headers,
         timeout=30,
-        verify=False,
+        verify=True,
     )
     resp.raise_for_status()
     upload_info = resp.json()
@@ -65,7 +61,7 @@ def _upload_to_max(token: str, data: bytes, filename: str, upload_type: str, con
         upload_url,
         files={"data": (filename, io.BytesIO(data), content_type)},
         timeout=60,
-        verify=False,
+        verify=True,
     )
     upload_resp.raise_for_status()
     upload_result = upload_resp.json()
@@ -96,7 +92,7 @@ def _upload_image_to_max(token: str, png_bytes: bytes, filename: str) -> str:
     Returns:
         str: media-токен изображения.
     """
-    return _upload_to_max(token, png_bytes, filename, "image", "image/png")
+    return _upload_to_max(token, png_bytes, filename, "image", "image/jpeg" if filename.lower().endswith((".jpg", ".jpeg")) else "image/png")
 
 
 def _extract_mid(result: dict) -> str | None:
@@ -162,7 +158,7 @@ def _send_max_message(
         headers=headers,
         json=payload,
         timeout=30,
-        verify=False,
+        verify=True,
     )
     resp.raise_for_status()
     return resp.json()

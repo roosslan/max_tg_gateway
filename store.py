@@ -67,7 +67,7 @@ class MappingStore:
                 if os.path.exists(tmp_path):
                     os.remove(tmp_path)
         except Exception as exc:
-            print(f"[ERROR] Не удалось сохранить хранилище {self._path}: {exc}", file=sys.stderr)
+            raise RuntimeError("Не удалось сохранить хранилище") from exc
 
     def remember(self, max_mid: str, tg_chat_id, tg_message_id, label: str = "") -> None:
         """Запоминает, какому сообщению Telegram соответствует сообщение MAX.
