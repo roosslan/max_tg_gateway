@@ -1,0 +1,16 @@
+[Unit]
+Description=max_tg_gateway — шлюз Telegram <-> MAX
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+# Пути и пользователя необходимо привести к своей установке.
+User=max_tg_gateway
+WorkingDirectory=/opt/max_tg_gateway
+ExecStart=/opt/max_tg_gateway/.venv/bin/python /opt/max_tg_gateway/main.py
+Restart=on-failure
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
